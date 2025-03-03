@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CPU Performance Predictor</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary-color: #4361ee;
+        --primary-hover: #3a56d4;
+        --secondary-color: #3f37c9;
+        --text-color: #333;
+        --light-bg: #f8f9fa;
+        --border-radius: 12px;
+        --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        --transition: all 0.3s ease;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Prompt", "Kanit", "Sarabun", -apple-system,
+          BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        line-height: 1.6;
+        background-color: var(--light-bg);
+        color: var(--text-color);
+        padding: 0;
+        margin: 0;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      header {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        text-align: center;
+        box-shadow: var(--box-shadow);
+      }
+
+      .app-title {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+      }
+
+      .header-thai {
+        font-size: 1.5rem;
+        opacity: 0.9;
+        margin-bottom: 1rem;
+      }
+
+      .card {
+        background-color: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        overflow: hidden;
+        margin-bottom: 2rem;
+        transition: var(--transition);
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .card-header {
+        padding: 1.5rem;
+        background-color: #f2f6ff;
+        border-bottom: 1px solid #e1e8ed;
+        display: flex;
+        align-items: center;
+      }
+
+      .card-header i {
+        font-size: 1.5rem;
+        margin-right: 1rem;
+        color: var(--primary-color);
+      }
+
+      .card-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: var(--primary-color);
+      }
+
+      .card-body {
+        padding: 1.5rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #555;
+      }
+
+      select,
+      input[type="number"] {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+        background-color: #f9fafc;
+        transition: var(--transition);
+      }
+
+      select:focus,
+      input[type="number"]:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+      }
+
+      .input-icon {
+        position: relative;
+      }
+
+      .input-icon i {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #aaa;
+      }
+
+      .btn {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+      }
+
+      .btn:hover {
+        background-color: var(--primary-hover);
+        transform: translateY(-2px);
+      }
+
+      .btn i {
+        margin-right: 0.5rem;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 1.5rem;
+      }
+
+      .loading i {
+        font-size: 2rem;
+        color: var(--primary-color);
+        animation: spin 1s infinite linear;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .result {
+        display: none;
+        margin-top: 2rem;
+      }
+
+      .result-card {
+        background-color: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        overflow: hidden;
+      }
+
+      .result-header {
+        background: linear-gradient(135deg, #4cc9f0, #4361ee);
+        color: white;
+        padding: 1.5rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+
+      .result-body {
+        padding: 1.5rem;
+        text-align: center;
+      }
+
+      .result-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 1rem 0;
+      }
+
+      .performance-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 600;
+        margin: 0.5rem 0;
+      }
+
+      .badge-low {
+        background-color: #ffe3e3;
+        color: #e63946;
+      }
+      .badge-medium-low {
+        background-color: #fff3cd;
+        color: #cc8800;
+      }
+      .badge-medium {
+        background-color: #e2f0cb;
+        color: #5c9210;
+      }
+      .badge-medium-high {
+        background-color: #d0f4de;
+        color: #168038;
+      }
+      .badge-high {
+        background-color: #c8e7ff;
+        color: #0077cc;
+      }
+      .badge-very-high {
+        background-color: #d7d2fe;
+        color: #6d28d9;
+      }
+
+      .input-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0 -0.5rem;
+      }
+
+      .input-group {
+        flex: 1 0 48%;
+        margin: 0 0.5rem 1.5rem;
+        min-width: 250px;
+      }
+
+      .description {
+        font-size: 0.875rem;
+        color: #666;
+        margin-top: 0.25rem;
+      }
+
+      footer {
+        background-color: #f2f6ff;
+        padding: 1.5rem;
+        text-align: center;
+        margin-top: 2rem;
+        border-top: 1px solid #e1e8ed;
+        font-size: 0.875rem;
+        color: #666;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 1rem;
+        }
+
+        .input-group {
+          flex: 1 0 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <h1 class="app-title">CPU Performance Predictor</h1>
+        <div class="header-thai">
+          <h2>การทำนายค่าพลังประมวลผลของ CPU</h2>
+        </div>
+        <p>วิเคราะห์และทำนายประสิทธิภาพของ CPU จากคุณลักษณะทางเทคนิค</p>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="card">
+        <div class="card-header">
+          <i class="fas fa-microchip"></i>
+          <h2>กรอกข้อมูล CPU</h2>
+        </div>
+        <div class="card-body">
+          <p>
+            กรุณากรอกข้อมูลคุณลักษณะของ CPU เพื่อทำนายระดับประสิทธิภาพการทำงาน
+          </p>
+
+          <form id="predictionForm">
+            <div class="form-group">
+              <label for="vendor">ผู้ผลิต (Vendor):</label>
+              <div class="input-icon">
+                <select id="vendor" name="vendor" required>
+                  <option value="">เลือกผู้ผลิต</option>
+                  <option value="amdahl">Amdahl</option>
+                  <option value="apollo">Apollo</option>
+                  <option value="basf">BASF</option>
+                  <option value="bti">BTI</option>
+                  <option value="burroughs">Burroughs</option>
+                  <option value="c r d">C R D</option>
+                  <option value="cambex">Cambex</option>
+                  <option value="cdc">CDC</option>
+                  <option value="dec">DEC</option>
+                  <option value="dg">DG</option>
+                  <option value="formation">Formation</option>
+                  <option value="four phase">Four Phase</option>
+                  <option value="gould">Gould</option>
+                  <option value="harris">Harris</option>
+                  <option value="honeywell">Honeywell</option>
+                  <option value="hp">HP</option>
+                  <option value="ibm">IBM</option>
+                  <option value="ipl">IPL</option>
+                  <option value="magnuson">Magnuson</option>
+                  <option value="microdata">Microdata</option>
+                  <option value="nas">NAS</option>
+                  <option value="ncr">NCR</option>
+                  <option value="nixdorf">Nixdorf</option>
+                  <option value="perkin elmer">Perkin Elmer</option>
+                  <option value="prime">Prime</option>
+                  <option value="siemens">Siemens</option>
+                  <option value="sperry">Sperry</option>
+                  <option value="stratus">Stratus</option>
+                  <option value="wang">Wang</option>
+                </select>
+                <i class="fas fa-building"></i>
+              </div>
+            </div>
+
+            <div class="input-wrapper">
+              <div class="input-group">
+                <label for="myct">เวลาในหนึ่งรอบการทำงาน (MYCT):</label>
+                <div class="input-icon">
+                  <input
+                    type="number"
+                    id="myct"
+                    name="myct"
+                    min="0"
+                    step="1"
+                    required
+                  />
+                  <i class="fas fa-clock"></i>
+                </div>
+                <div class="description">หน่วย: นาโนวินาที</div>
+              </div>
+
+              <div class="input-group">
+                <label for="mmin">หน่วยความจำหลักต่ำสุด (MMIN):</label>
+                <div class="input-icon">
+                  <input
+                    type="number"
+                    id="mmin"
+                    name="mmin"
+                    min="0"
+                    step="1"
+                    required
+                  />
+                  <i class="fas fa-memory"></i>
+                </div>
+                <div class="description">หน่วย: KB</div>
+              </div>
+            </div>
+
+            <div class="input-wrapper">
+              <div class="input-group">
+                <label for="mmax">หน่วยความจำหลักสูงสุด (MMAX):</label>
+                <div class="input-icon">
+                  <input
+                    type="number"
+                    id="mmax"
+                    name="mmax"
+                    min="0"
+                    step="1"
+                    required
+                  />
+                  <i class="fas fa-memory"></i>
+                </div>
+                <div class="description">หน่วย: KB</div>
+              </div>
+
+              <div class="input-group">
+                <label for="cach">หน่วยความจำแคช (CACH):</label>
+                <div class="input-icon">
+                  <input
+                    type="number"
+                    id="cach"
+                    name="cach"
+                    min="0"
+                    step="1"
+                    required
+                  />
+                  <i class="fas fa-hdd"></i>
+                </div>
+                <div class="description">หน่วย: KB</div>
+              </div>
+            </div>
+
+            <div class="input-wrapper">
+              <div class="input-group">
+                <label for="chmin">จำนวนช่องทางต่ำสุด (CHMIN):</label>
+                <div class="input-icon">
+                  <input
+                    type="number"
+                    id="chmin"
+                    name="chmin"
+                    min="0"
+                    step="1"
+                    required
+                  />
+                  <i class="fas fa-network-wired"></i>
+                </div>
+                <div class="description">จำนวนช่องทาง I/O</div>
+              </div>
+
+              <div class="input-group">
+                <label for="chmax">จำนวนช่องทางสูงสุด (CHMAX):</label>
+                <div class="input-icon">
+                  <input
+                    type="number"
+                    id="chmax"
+                    name="chmax"
+                    min="0"
+                    step="1"
+                    required
+                  />
+                  <i class="fas fa-network-wired"></i>
+                </div>
+                <div class="description">จำนวนช่องทาง I/O</div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn">
+              <i class="fas fa-chart-line"></i> ทำนายประสิทธิภาพ
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="loading" id="loading">
+        <i class="fas fa-spinner"></i>
+        <p>กำลังประมวลผล... กรุณารอสักครู่</p>
+      </div>
+
+      <div class="result" id="result">
+        <div class="result-card">
+          <div class="result-header">
+            <i class="fas fa-chart-bar"></i> ผลการทำนายประสิทธิภาพ
+          </div>
+          <div class="result-body">
+            <div class="result-value" id="predictionResult">
+              <!-- ผลลัพธ์จะถูกแสดงที่นี่ -->
+            </div>
+            <div id="performance-badge" class="performance-badge">
+              <!-- ระดับประสิทธิภาพจะถูกแสดงที่นี่ -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="container">
+        <p>
+          © 2025 CPU Performance Predictor | ระบบทำนายประสิทธิภาพ CPU ด้วย
+          Machine Learning
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      document
+        .getElementById("predictionForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          // Show loading indicator
+          document.getElementById("loading").style.display = "block";
+          document.getElementById("result").style.display = "none";
+
+          // Get form data
+          const formData = new FormData(this);
+
+          // Send AJAX request
+          fetch("predict.php", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              // Hide loading indicator
+              document.getElementById("loading").style.display = "none";
+
+              // Display result
+              if (data.status === "success") {
+                let predictionText = "";
+                let badgeClass = "";
+
+                switch (data.prediction) {
+                  case "low":
+                    predictionText = "ต่ำ (Low)";
+                    badgeClass = "badge-low";
+                    break;
+                  case "medium-low":
+                    predictionText = "ต่ำกลาง (Medium-Low)";
+                    badgeClass = "badge-medium-low";
+                    break;
+                  case "medium":
+                    predictionText = "กลาง (Medium)";
+                    badgeClass = "badge-medium";
+                    break;
+                  case "medium-high":
+                    predictionText = "กลางสูง (Medium-High)";
+                    badgeClass = "badge-medium-high";
+                    break;
+                  case "high":
+                    predictionText = "สูง (High)";
+                    badgeClass = "badge-high";
+                    break;
+                  case "very-high":
+                    predictionText = "สูงมาก (Very-High)";
+                    badgeClass = "badge-very-high";
+                    break;
+                  default:
+                    predictionText = data.prediction;
+                    badgeClass = "badge-medium";
+                }
+
+                document.getElementById("predictionResult").textContent =
+                  predictionText;
+
+                const badge = document.getElementById("performance-badge");
+                badge.textContent = predictionText;
+                badge.className = "performance-badge " + badgeClass;
+              } else {
+                document.getElementById(
+                  "predictionResult"
+                ).textContent = `เกิดข้อผิดพลาด: ${data.message}`;
+                document.getElementById("performance-badge").style.display =
+                  "none";
+              }
+
+              document.getElementById("result").style.display = "block";
+
+              // Smooth scroll to results
+              document.getElementById("result").scrollIntoView({
+                behavior: "smooth",
+              });
+            })
+            .catch((error) => {
+              // Hide loading indicator
+              document.getElementById("loading").style.display = "none";
+
+              // Display error
+              document.getElementById(
+                "predictionResult"
+              ).textContent = `เกิดข้อผิดพลาด: ${error.message}`;
+              document.getElementById("performance-badge").style.display =
+                "none";
+              document.getElementById("result").style.display = "block";
+            });
+        });
+    </script>
+  </body>
+</html>
